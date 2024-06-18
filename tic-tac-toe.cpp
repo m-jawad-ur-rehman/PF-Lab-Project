@@ -2,161 +2,347 @@
 #include <ctime>
 using namespace std;
 
-void menu();
-void drawBoard(char *);
-void compMove(char *, char);
-void plyrMove(char *, char);
-bool isBoardFull(char *);
-bool checkWinner(char *, char);
+void intro();
+void allocateMoves(char **&, int, int);
+void drawBoard(char **);
+void setBoard(char **, int, int);
+char getPlyrMarker();
+void getCompMove(char **, char);
+void getPlyrMove(char **, char);
+bool isBoardFull(char **, int, int);
+bool checkWinner(char **, char, int, int);
+void p2pGame(char **, int, int, char);
+void p2cGame(char **, int, int, char);
+void ticTacToe();
 
 int main()
 {
   srand(time(NULL));
-  menu();
-
-  char *moves = new char[9]{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  drawBoard(moves);
-
-  for (int i = 0; i < 9; i++)
-  {
-    moves[i] = ' ';
-  }
-
-  char playerMove = 'X';
-  char computerMove = 'O';
-  int i = 0;
-
-  do
-  {
-    plyrMove(moves, playerMove);
-    drawBoard(moves);
-
-    if (checkWinner(moves, playerMove))
-    {
-      cout << "You Won >>>" << endl;
-      break;
-    }
-
-    compMove(moves, computerMove);
-    drawBoard(moves);
-
-    if (checkWinner(moves, computerMove))
-    {
-      cout << "Computer Won >>>" << endl;
-      break;
-    }
-
-    i++;
-  } while (i < 9);
+  intro();
+  ticTacToe();
 
   return 0;
 }
 
-void menu()
+void intro()
 {
-      cout << endl;
-      cout << endl;
+  cout << endl;
+  cout << endl;
 
-    cout << "\t\t==        ==        == == == ==      =       ==        ==       =       == ==\n";
-    cout << "\t\t== =    = ==              ==       == ==     ==        ==     == ==     == == ==\n";
-    cout << "\t\t==  =  =  ==              ==     ==     ==   ==   ==   ==   ==     ==   ==     ==\n";
-    cout << "\t\t==   ==   ==              ==    == == == ==  ==  =  =  ==  == == == ==  ==     ==\n";
-    cout << "\t\t==        ==        ==    ==    ==       ==  == =    = ==  ==       ==  == == ==\n";
-    cout << "\t\t==        ==        ========    ==       ==  ==        ==  ==       ==  == ==\n";
+  cout << "\t\t==        ==        == == == ==      =       ==        ==       =       == ==\n";
+  cout << "\t\t== =    = ==              ==       == ==     ==        ==     == ==     == == ==\n";
+  cout << "\t\t==  =  =  ==              ==     ==     ==   ==   ==   ==   ==     ==   ==     ==\n";
+  cout << "\t\t==   ==   ==              ==    == == == ==  ==  =  =  ==  == == == ==  ==     ==\n";
+  cout << "\t\t==        ==        ==    ==    ==       ==  == =    = ==  ==       ==  == == ==\n";
+  cout << "\t\t==        ==        ========    ==       ==  ==        ==  ==       ==  == ==\n";
 
-    cout << endl;
-    cout << endl;
-
-    cout << "\t\t========================================================\n";
-    cout << "\t\t|-------------------- TIC-TAC-TOE ---------------------|\n";
-    cout << "\t\t========================================================\n";
-
-    cout << endl;
-    cout << endl;
-
-    cout << "\t =========================================\n";
-    cout << "\t|---------------- WELCOME ----------------|\n";
-    cout << "\t =========================================\n";
-
-    cout << endl;
+  cout << endl;
+  cout << "\t\t\t========================================================\n";
+  cout << "\t\t\t|----------------------- WELCOME ----------------------|\n";
+  cout << "\t\t\t========================================================\n";
+  cout << endl;
+  cout << endl;
+  cout << "== == ==  ==  == == ==    == == ==    ==     == == ==   == == ==   = == =   == == ==" << endl;
+  cout << "   ==     ==  ==             ==     ==  ==   ==            ==     ==    ==  ==      " << endl;
+  cout << "   ==     ==  ==             ==    == == ==  ==            ==     ==    ==  == = =  " << endl;
+  cout << "   ==     ==  ==             ==    ==    ==  ==            ==     ==    ==  ==      " << endl;
+  cout << "   ==     ==  == == ==       ==    ==    ==  == == ==      ==      = == =   == == ==" << endl;
+  cout << endl;
+  cout << endl;
+  cout << endl;
 }
 
-void drawBoard(char *moves)
+void allocateMoves(char **&moves, int rows, int cols)
+{
+  moves = new char *[rows];
+
+  for (int i = 0; i < rows; i++)
+  {
+    moves[i] = new char[cols];
+  }
+}
+void drawBoard(char **moves)
 {
 
   cout << "       |       |       " << endl;
-  cout << "   " << moves[0] << "   |   " << moves[1] << "   |   " << moves[2] << "   " << endl;
+  cout << "   " << moves[0][0] << "   |   " << moves[0][1] << "   |   " << moves[0][2] << "   " << endl;
   cout << "_______|_______|______" << endl;
   cout << "       |       |       " << endl;
-  cout << "   " << moves[3] << "   |   " << moves[4] << "   |   " << moves[5] << "   " << endl;
+  cout << "   " << moves[1][0] << "   |   " << moves[1][1] << "   |   " << moves[1][2] << "   " << endl;
   cout << "_______|_______|_______" << endl;
   cout << "       |       |       " << endl;
-  cout << "   " << moves[6] << "   |   " << moves[7] << "   |   " << moves[8] << "   " << endl;
+  cout << "   " << moves[2][0] << "   |   " << moves[2][1] << "   |   " << moves[2][2] << "   " << endl;
   cout << "       |       |       " << endl;
   cout << endl;
 }
 
-void compMove(char *moves, char move)
+void setBoard(char **moves, int r, int c)
 {
-  int n = 0;
-  do
+  for (int i = 0; i < r; i++)
   {
-    n = rand() % 9;
-  } while (moves[n] != ' ');
-  moves[n] = move;
-}
-
-void plyrMove(char *moves, char move)
-{
-  int n = 0;
-  do
-  {
-    cout << "Enter Any Box Between 1 to 9 => ";
-    cin >> n;
-    if (n < 1 || n > 9 || moves[n - 1] != ' ')
+    for (int j = 0; j < c; j++)
     {
-      cout << "Invalid Move... \n " << endl;
+      moves[i][j] = ' ';
     }
-  } while (n < 1 || n > 9 || moves[n - 1] != ' ');
-
-  moves[n - 1] = move;
+  }
+}
+char getPlyrMarker()
+{
+  char marker = '\0';
+  do
+  {
+    cout << "Enter Your Marker Style Either \"X\" or \"O\" => ";
+    cin >> marker;
+  } while (marker != 'X' && marker != 'O');
+  return marker;
+}
+void getCompMove(char **moves, char move)
+{
+  int row = 0;
+  int col = 0;
+  do
+  {
+    row = rand() % 3;
+    col = rand() % 3;
+  } while (moves[row][col] != ' ');
+  moves[row][col] = move;
 }
 
-bool isBoardFull(char *moves)
+void getPlyrMove(char **moves, char move)
 {
-  for (int i = 0; i < 9; i++)
+  int row = 0;
+  int col = 0;
+  do
   {
-    if (moves[i] == ' ')
+    cout << "Enter Row No. (Any No. Between 1 to 3) => ";
+    cin >> row;
+    if (row < 1 || row > 3)
     {
-      return false;
+      cout << "Invalid Move... Out of Range" << endl;
+    }
+    else if(moves[row-1][0] != ' ' && moves[row-1][1] != ' ' && moves[row-1][2] != ' ')
+    {
+      cout << "Invalid Move... This Row is Allocated" << endl;
+    }
+  } while (row < 1 || row > 3 || (moves[row-1][0] != ' ' && moves[row-1][1] != ' ' && moves[row-1][0] != ' '));
+
+  do
+  {
+    cout << "Enter Column No. (Any No. Between 1 to 3) => ";
+    cin >> col;
+    if (col < 1 || col > 3)
+    {
+      cout << "Invalid Move... Out of Range \n ";
+    }
+    else if (moves[row - 1][col - 1] != ' ')
+    {
+      cout << "Invalid Move... \n Location Already Occupied \n " << endl;
+    }
+  } while (col < 1 || col > 3 || moves[row - 1][col - 1] != ' ');
+
+  moves[row - 1][col - 1] = move;
+}
+
+bool isBoardFull(char **moves, int r, int c)
+{
+  for (int i = 0; i < r; i++)
+  {
+    for (int j = 0; j < c; j++)
+    {
+      if (moves[i][j] == ' ')
+        return false;
     }
   }
   return true;
 }
 
-bool checkWinner(char *moves, char move)
+bool checkWinner(char **moves, char move, int r, int c)
 {
-  for (int i = 0; i < 9; i += 3)
+  for (int i = 0; i < r; i++)
   {
-    if (moves[i] == move && moves[i + 1] == move && moves[i + 2] == move)
+    if (moves[i][0] == move && moves[i][1] == move && moves[i][2] == move)
     {
       return true;
     }
   }
 
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < c; i++)
   {
-    if (moves[i] == move && moves[i + 3] == move && moves[i + 6] == move)
+    if (moves[0][i] == move && moves[1][i] == move && moves[2][i] == move)
     {
       return true;
     }
   }
 
-  if ((moves[0] == move && moves[4] == move && moves[8] == move) ||
-      (moves[2] == move && moves[4] == move && moves[6] == move))
+  if ((moves[0][0] == move && moves[1][1] == move && moves[2][2] == move) ||
+      (moves[0][2] == move && moves[1][1] == move && moves[2][0] == move))
   {
     return true;
   }
 
   return false;
+}
+
+void p2pGame(char **moves, int rows, int cols, char play)
+{
+  do
+  {
+    setBoard(moves, rows, cols);
+    drawBoard(moves);
+
+    cout << "Player 1 => " << endl;
+    cout << "\t\t";
+    char plyr1Marker = getPlyrMarker();
+    char plyr2Marker = plyr1Marker == 'X' ? 'O' : 'X';
+    cout << "Player 2 Marker => \"O\"" << endl;
+
+    do
+    {
+      cout << "Player 1 Move: \n";
+      getPlyrMove(moves, plyr1Marker);
+      drawBoard(moves);
+
+      if (checkWinner(moves, plyr1Marker, rows, cols))
+      {
+        cout << "Player 1 Won >>>" << endl;
+        break;
+      }
+      if (isBoardFull(moves, rows, cols))
+      {
+        cout << "This Game is a Draw >>> " << endl;
+        break;
+      }
+
+      cout << "Player 2 Move: \n";
+      getPlyrMove(moves, plyr2Marker);
+      drawBoard(moves);
+
+      if (checkWinner(moves, plyr2Marker, rows, cols))
+      {
+        cout << "Player 2 Won >>>" << endl;
+        break;
+      }
+      if (isBoardFull(moves, rows, cols))
+      {
+        cout << "This Game is a Draw >>> " << endl;
+        break;
+      }
+    } while (true);
+
+    cout << "Do you Want to Play Again ..." << endl;
+    cout << "\t=> Enter \"P\" to Play Again" << endl;
+    cout << "\t=> Enter \"Q\" to Quit" << endl;
+    cin >> play;
+
+  } while (play != 'Q' && play != 'q');
+}
+
+void p2cGame(char **moves, int rows, int cols, char play)
+{
+  do
+  {
+    setBoard(moves, rows, cols);
+    drawBoard(moves);
+
+    char plyrMarker = getPlyrMarker();
+    char compMarker = plyrMarker == 'X' ? 'O' : 'X';
+
+    do
+    {
+      cout << "Player Move: \n";
+      getPlyrMove(moves, plyrMarker);
+      drawBoard(moves);
+
+      if (checkWinner(moves, plyrMarker, rows, cols))
+      {
+        cout << "You Won >>>" << endl;
+        break;
+      }
+      if (isBoardFull(moves, rows, cols))
+      {
+        cout << "This Game is a Draw >>> " << endl;
+        break;
+      }
+
+      getCompMove(moves, compMarker);
+      drawBoard(moves);
+
+      if (checkWinner(moves, compMarker, rows, cols))
+      {
+        cout << "Computer Won >>>" << endl;
+        break;
+      }
+      if (isBoardFull(moves, rows, cols))
+      {
+        cout << "This Game is a Draw >>> " << endl;
+        break;
+      }
+    } while (true);
+
+    cout << "Do you Want to Play Again ..." << endl;
+    cout << "\t=> Enter \"P\" to Play Again" << endl;
+    cout << "\t=> Enter \"Q\" to Quit" << endl;
+    cin >> play;
+  } while (play != 'Q' && play != 'q');
+}
+
+void ticTacToe()
+{
+  int rows = 3;
+  int cols = 3;
+  char play = '\0';
+
+  char **moves = nullptr;
+  allocateMoves(moves, rows, cols);
+
+  char slct = '\0';
+
+  cout << "1: Game Mode Selection -> Enter \"M\"" << endl;
+  cout << "2: Game Stats          -> Enter \"S\"" << endl;
+  cout << "3: New Game            -> Enter \"G\"" << endl;
+
+  do
+  {
+    cin >> slct;
+    if (slct != 'M' && slct != 'S' && slct != 'G')
+    {
+      cout << "Invalid Input... Re Enter Your Choice >>>" << endl;
+    }
+  } while (slct != 'M' && slct != 'S' && slct != 'G');
+
+  switch (slct)
+  {
+  case 'M':
+    char mode = '\0';
+    cout << "ENTER GAME MODE => " << endl;
+    cout << "For Player vs Player   -> Enter \"P\"" << endl;
+    cout << "For Player vs Computer -> Enter \"C\"" << endl;
+    do
+    {
+      cin >> mode;
+      if (mode != 'P' && mode != 'C')
+      {
+        cout << "Invalid Input... Re Enter Your Choice >>>" << endl;
+      }
+    } while (mode != 'P' && mode != 'C');
+
+    switch (mode)
+    {
+    case 'P':
+      p2pGame(moves, rows, cols, play);
+      break;
+    case 'C':
+      cout << "Enter GAME DIFFICULTY LEVEL => " << endl;
+      cout << "For Easy   -> Enter \"E\"" << endl;
+      cout << "For Medium -> Enter \"M\"" << endl;
+      cout << "For Hard   -> Enter \"H\"" << endl;
+      p2cGame(moves, rows, cols, play);
+      break;
+    }
+    break;
+    // case 'S':
+    //   break;
+    // case 'G':
+    //   break;
+  }
 }
