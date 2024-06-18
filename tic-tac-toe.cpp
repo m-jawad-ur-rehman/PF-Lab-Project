@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <ctime>
 using namespace std;
 
@@ -11,8 +12,11 @@ void getCompMove(char **, char);
 void getPlyrMove(char **, char);
 bool isBoardFull(char **, int, int);
 bool checkWinner(char **, char, int, int);
-void p2pGame(char **, int, int, char);
-void p2cGame(char **, int, int, char);
+void createStats(char *, int, int, int);
+void updateStats(char *, char);
+void showStats(char *);
+void p2pGame(char **, int, int, char, char *);
+void p2cGame(char **, int, int, char, char *);
 void ticTacToe();
 
 int main()
@@ -61,6 +65,7 @@ void allocateMoves(char **&moves, int rows, int cols)
     moves[i] = new char[cols];
   }
 }
+
 void drawBoard(char **moves)
 {
 
@@ -86,6 +91,7 @@ void setBoard(char **moves, int r, int c)
     }
   }
 }
+
 char getPlyrMarker()
 {
   char marker = '\0';
@@ -96,6 +102,7 @@ char getPlyrMarker()
   } while (marker != 'X' && marker != 'O');
   return marker;
 }
+
 void getCompMove(char **moves, char move)
 {
   int row = 0;
@@ -120,11 +127,11 @@ void getPlyrMove(char **moves, char move)
     {
       cout << "Invalid Move... Out of Range" << endl;
     }
-    else if(moves[row-1][0] != ' ' && moves[row-1][1] != ' ' && moves[row-1][2] != ' ')
+    else if (moves[row - 1][0] != ' ' && moves[row - 1][1] != ' ' && moves[row - 1][2] != ' ')
     {
       cout << "Invalid Move... This Row is Allocated" << endl;
     }
-  } while (row < 1 || row > 3 || (moves[row-1][0] != ' ' && moves[row-1][1] != ' ' && moves[row-1][0] != ' '));
+  } while (row < 1 || row > 3 || (moves[row - 1][0] != ' ' && moves[row - 1][1] != ' ' && moves[row - 1][0] != ' '));
 
   do
   {
@@ -183,7 +190,76 @@ bool checkWinner(char **moves, char move, int r, int c)
   return false;
 }
 
-void p2pGame(char **moves, int rows, int cols, char play)
+void createStats(char *sF, int p1, int p2, int d)
+{
+  ofstream out(sF);
+  out << p1 << " " << p2 << " " << d;
+  out.close();
+}
+
+void updateStats(char *sF, char p1Result)
+{
+  ifstream in(sF);
+
+  int p1Wins = 0;
+  int p2Wins = 0;
+  int draws = 0;
+
+  if (in.is_open())
+  {
+    in >> p1Wins >> p2Wins >> draws;
+    if (p1Result == 'W')
+    {
+      p1Wins++;
+    }
+
+    else if (p1Result == 'L')
+    {
+      p2Wins++;
+    }
+
+    else if (p1Result == 'D')
+    {
+      draws++;
+    }
+  }
+  in.close();
+
+  createStats(sF, p1Wins, p2Wins, draws);
+}
+
+void showStats(char *sF)
+{
+  ifstream in(sF);
+
+  int p1Wins = 0;
+  int p2Wins = 0;
+  int draws = 0;
+
+  if (in.is_open())
+  {
+    in >> p1Wins >> p2Wins >> draws;
+  }
+  in.close();
+
+  cout << "\t\t TIC TAC TOE \n " << endl;
+
+  if (sF[2] == 'p')
+  {
+    cout << "\tPlayer 1 Wins => " << p1Wins << endl;
+    cout << "\tPlayer 2 Wins => " << p2Wins << endl;
+  }
+
+  else
+  {
+    cout << "\tYour Wins     => " << p1Wins << endl;
+    cout << "\tComputer Wins => " << p2Wins << endl;
+  }
+
+  cout << "\tDraws         => " << draws << endl;
+}
+
+void p2pGame(char **moves, int rows, int cols, char play, char *sF)
 {
   do
   {
@@ -205,11 +281,13 @@ void p2pGame(char **moves, int rows, int cols, char play)
       if (checkWinner(moves, plyr1Marker, rows, cols))
       {
         cout << "Player 1 Won >>>" << endl;
+        updateStats(sF, 'W');
         break;
       }
       if (isBoardFull(moves, rows, cols))
       {
         cout << "This Game is a Draw >>> " << endl;
+        updateStats(sF, 'D');
         break;
       }
 
@@ -220,11 +298,13 @@ void p2pGame(char **moves, int rows, int cols, char play)
       if (checkWinner(moves, plyr2Marker, rows, cols))
       {
         cout << "Player 2 Won >>>" << endl;
+        updateStats(sF, 'L');
         break;
       }
       if (isBoardFull(moves, rows, cols))
       {
         cout << "This Game is a Draw >>> " << endl;
+        updateStats(sF, 'D');
         break;
       }
     } while (true);
@@ -237,7 +317,7 @@ void p2pGame(char **moves, int rows, int cols, char play)
   } while (play != 'Q' && play != 'q');
 }
 
-void p2cGame(char **moves, int rows, int cols, char play)
+void p2cGame(char **moves, int rows, int cols, char play, char *sF)
 {
   do
   {
@@ -256,11 +336,13 @@ void p2cGame(char **moves, int rows, int cols, char play)
       if (checkWinner(moves, plyrMarker, rows, cols))
       {
         cout << "You Won >>>" << endl;
+        updateStats(sF, 'W');
         break;
       }
       if (isBoardFull(moves, rows, cols))
       {
         cout << "This Game is a Draw >>> " << endl;
+        updateStats(sF, 'D');
         break;
       }
 
@@ -270,11 +352,13 @@ void p2cGame(char **moves, int rows, int cols, char play)
       if (checkWinner(moves, compMarker, rows, cols))
       {
         cout << "Computer Won >>>" << endl;
+        updateStats(sF, 'L');
         break;
       }
       if (isBoardFull(moves, rows, cols))
       {
         cout << "This Game is a Draw >>> " << endl;
+        updateStats(sF, 'D');
         break;
       }
     } while (true);
@@ -295,11 +379,19 @@ void ticTacToe()
   char **moves = nullptr;
   allocateMoves(moves, rows, cols);
 
+  char *p2pStatsFile = new char[15]{"p2p-Game-Stats"};
+  createStats(p2pStatsFile, 0, 0, 0);
+
+  char *p2cStatsFile = new char[15]{"p2c-Game-Stats"};
+  createStats(p2cStatsFile, 0, 0, 0);
+
   char slct = '\0';
+  char mode = '\0';
 
   cout << "1: Game Mode Selection -> Enter \"M\"" << endl;
   cout << "2: Game Stats          -> Enter \"S\"" << endl;
   cout << "3: New Game            -> Enter \"G\"" << endl;
+  cout << "\t => ";
 
   do
   {
@@ -313,7 +405,6 @@ void ticTacToe()
   switch (slct)
   {
   case 'M':
-    char mode = '\0';
     cout << "ENTER GAME MODE => " << endl;
     cout << "For Player vs Player   -> Enter \"P\"" << endl;
     cout << "For Player vs Computer -> Enter \"C\"" << endl;
@@ -329,20 +420,26 @@ void ticTacToe()
     switch (mode)
     {
     case 'P':
-      p2pGame(moves, rows, cols, play);
+      p2pGame(moves, rows, cols, play, p2pStatsFile);
       break;
     case 'C':
       cout << "Enter GAME DIFFICULTY LEVEL => " << endl;
       cout << "For Easy   -> Enter \"E\"" << endl;
       cout << "For Medium -> Enter \"M\"" << endl;
       cout << "For Hard   -> Enter \"H\"" << endl;
-      p2cGame(moves, rows, cols, play);
+      p2cGame(moves, rows, cols, play, p2cStatsFile);
       break;
     }
     break;
-    // case 'S':
-    //   break;
-    // case 'G':
-    //   break;
+  case 'S':
+    cout << "P2P STATS >>>" << endl;
+    showStats(p2pStatsFile);
+    cout << "P2C STATS >>>" << endl;
+    showStats(p2cStatsFile);
+    break;
+  case 'G':
+    cout << "Creating New P2C Game =>\n " << endl;
+    p2cGame(moves, rows, cols, play, p2cStatsFile);
+    break;
   }
 }
