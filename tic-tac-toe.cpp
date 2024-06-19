@@ -5,18 +5,20 @@ using namespace std;
 
 void intro();
 void allocateMoves(char **&, int, int);
+void deallocateMoves(char **&, int);
 void drawBoard(char **);
 void setBoard(char **, int, int);
 char getPlyrMarker();
 void getCompMove(char **, char);
 void getPlyrMove(char **, char);
 bool isBoardFull(char **, int, int);
-bool checkWinner(char **, char, int, int);
-void createStats(char *, int, int, int);
-void updateStats(char *, char);
-void showStats(char *);
-void p2pGame(char **, int, int, char, char *);
-void p2cGame(char **, int, int, char, char *);
+bool checkWinner(char **, char, int);
+void resetStats(const char *, int, int, int);
+void updateStats(const char *, char);
+void showStats(const char *);
+void p2pGame(char **, int, int, char, const char *);
+void p2cGame(char **, int, int, char, const char *);
+void menu(char **, char, char, const char *p2pSF = "p2p-Stats", const char *p2cSF = "p2c-Stats");
 void ticTacToe();
 
 int main()
@@ -64,6 +66,16 @@ void allocateMoves(char **&moves, int rows, int cols)
   {
     moves[i] = new char[cols];
   }
+}
+
+void deallocateMoves(char **&moves, int rows)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    delete[] moves[i];
+  }
+  delete[] moves;
+  moves = nullptr;
 }
 
 void drawBoard(char **moves)
@@ -121,7 +133,7 @@ void getPlyrMove(char **moves, char move)
   int col = 0;
   do
   {
-    cout << "Enter Row No. (Any No. Between 1 to 3) => ";
+    cout << "Enter Row No. (1, 2 or 3) => ";
     cin >> row;
     if (row < 1 || row > 3)
     {
@@ -131,11 +143,11 @@ void getPlyrMove(char **moves, char move)
     {
       cout << "Invalid Move... This Row is Allocated" << endl;
     }
-  } while (row < 1 || row > 3 || (moves[row - 1][0] != ' ' && moves[row - 1][1] != ' ' && moves[row - 1][0] != ' '));
+  } while ((row < 1 || row > 3) || (moves[row - 1][0] != ' ' && moves[row - 1][1] != ' ' && moves[row - 1][2] != ' '));
 
   do
   {
-    cout << "Enter Column No. (Any No. Between 1 to 3) => ";
+    cout << "Enter Column No. (1, 2 or 3) => ";
     cin >> col;
     if (col < 1 || col > 3)
     {
@@ -145,7 +157,7 @@ void getPlyrMove(char **moves, char move)
     {
       cout << "Invalid Move... \n Location Already Occupied \n " << endl;
     }
-  } while (col < 1 || col > 3 || moves[row - 1][col - 1] != ' ');
+  } while ((col < 1 || col > 3) || (moves[row - 1][col - 1] != ' '));
 
   moves[row - 1][col - 1] = move;
 }
@@ -163,19 +175,12 @@ bool isBoardFull(char **moves, int r, int c)
   return true;
 }
 
-bool checkWinner(char **moves, char move, int r, int c)
+bool checkWinner(char **moves, char move, int s)
 {
-  for (int i = 0; i < r; i++)
+  for (int i = 0; i < s; i++)
   {
-    if (moves[i][0] == move && moves[i][1] == move && moves[i][2] == move)
-    {
-      return true;
-    }
-  }
-
-  for (int i = 0; i < c; i++)
-  {
-    if (moves[0][i] == move && moves[1][i] == move && moves[2][i] == move)
+    if ((moves[i][0] == move && moves[i][1] == move && moves[i][2] == move) ||
+        (moves[0][i] == move && moves[1][i] == move && moves[2][i] == move))
     {
       return true;
     }
@@ -190,14 +195,14 @@ bool checkWinner(char **moves, char move, int r, int c)
   return false;
 }
 
-void createStats(char *sF, int p1, int p2, int d)
+void resetStats(const char *sF, int p1, int p2, int d)
 {
   ofstream out(sF);
   out << p1 << " " << p2 << " " << d;
   out.close();
 }
 
-void updateStats(char *sF, char p1Result)
+void updateStats(const char *sF, char p1Result)
 {
   ifstream in(sF);
 
@@ -225,10 +230,10 @@ void updateStats(char *sF, char p1Result)
   }
   in.close();
 
-  createStats(sF, p1Wins, p2Wins, draws);
+  resetStats(sF, p1Wins, p2Wins, draws);
 }
 
-void showStats(char *sF)
+void showStats(const char *sF)
 {
   ifstream in(sF);
 
@@ -257,9 +262,10 @@ void showStats(char *sF)
   }
 
   cout << "\tDraws         => " << draws << endl;
+  cout << "\n " << endl;
 }
 
-void p2pGame(char **moves, int rows, int cols, char play, char *sF)
+void p2pGame(char **moves, int rows, int cols, char play, const char *sF)
 {
   do
   {
@@ -278,7 +284,7 @@ void p2pGame(char **moves, int rows, int cols, char play, char *sF)
       getPlyrMove(moves, plyr1Marker);
       drawBoard(moves);
 
-      if (checkWinner(moves, plyr1Marker, rows, cols))
+      if (checkWinner(moves, plyr1Marker, rows))
       {
         cout << "Player 1 Won >>>" << endl;
         updateStats(sF, 'W');
@@ -295,7 +301,7 @@ void p2pGame(char **moves, int rows, int cols, char play, char *sF)
       getPlyrMove(moves, plyr2Marker);
       drawBoard(moves);
 
-      if (checkWinner(moves, plyr2Marker, rows, cols))
+      if (checkWinner(moves, plyr2Marker, rows))
       {
         cout << "Player 2 Won >>>" << endl;
         updateStats(sF, 'L');
@@ -309,15 +315,29 @@ void p2pGame(char **moves, int rows, int cols, char play, char *sF)
       }
     } while (true);
 
-    cout << "Do you Want to Play Again ..." << endl;
+    cout << "Do you Want to Play Again ...\n " << endl;
     cout << "\t=> Enter \"P\" to Play Again" << endl;
+    cout << "\t=> Enter \"M\" to Go to Menu" << endl;
     cout << "\t=> Enter \"Q\" to Quit" << endl;
     cin >> play;
+  } while (play == 'P' || play == 'p');
 
-  } while (play != 'Q' && play != 'q');
+  if (play == 'M' || play == 'm')
+  {
+    menu(moves, rows, cols);
+  }
+  else
+  {
+    char reset = '\0';
+    cout << "Do you want to Reset Stats (y/n) => ";
+    cin >> reset;
+
+    if (reset == 'y')
+      resetStats(sF, 0, 0, 0);
+  }
 }
 
-void p2cGame(char **moves, int rows, int cols, char play, char *sF)
+void p2cGame(char **moves, int rows, int cols, char play, const char *sF)
 {
   do
   {
@@ -333,7 +353,7 @@ void p2cGame(char **moves, int rows, int cols, char play, char *sF)
       getPlyrMove(moves, plyrMarker);
       drawBoard(moves);
 
-      if (checkWinner(moves, plyrMarker, rows, cols))
+      if (checkWinner(moves, plyrMarker, rows))
       {
         cout << "You Won >>>" << endl;
         updateStats(sF, 'W');
@@ -349,7 +369,7 @@ void p2cGame(char **moves, int rows, int cols, char play, char *sF)
       getCompMove(moves, compMarker);
       drawBoard(moves);
 
-      if (checkWinner(moves, compMarker, rows, cols))
+      if (checkWinner(moves, compMarker, rows))
       {
         cout << "Computer Won >>>" << endl;
         updateStats(sF, 'L');
@@ -363,28 +383,31 @@ void p2cGame(char **moves, int rows, int cols, char play, char *sF)
       }
     } while (true);
 
-    cout << "Do you Want to Play Again ..." << endl;
+    cout << "Do you Want to Play Again ...\n " << endl;
     cout << "\t=> Enter \"P\" to Play Again" << endl;
+    cout << "\t=> Enter \"M\" to Go to Menu" << endl;
     cout << "\t=> Enter \"Q\" to Quit" << endl;
     cin >> play;
-  } while (play != 'Q' && play != 'q');
+  } while (play == 'P' || play == 'p');
+
+  if (play == 'M' || play == 'm')
+  {
+    menu(moves, rows, cols);
+  }
+  else
+  {
+    char reset = '\0';
+    cout << "Do you want to Reset Stats (y/n) => ";
+    cin >> reset;
+
+    if (reset == 'y')
+      resetStats(sF, 0, 0, 0);
+  }
 }
 
-void ticTacToe()
+void menu(char **moves, char rows, char cols, const char *p2pSF, const char *p2cSF)
 {
-  int rows = 3;
-  int cols = 3;
   char play = '\0';
-
-  char **moves = nullptr;
-  allocateMoves(moves, rows, cols);
-
-  char *p2pStatsFile = new char[15]{"p2p-Game-Stats"};
-  createStats(p2pStatsFile, 0, 0, 0);
-
-  char *p2cStatsFile = new char[15]{"p2c-Game-Stats"};
-  createStats(p2cStatsFile, 0, 0, 0);
-
   char slct = '\0';
   char mode = '\0';
 
@@ -420,26 +443,45 @@ void ticTacToe()
     switch (mode)
     {
     case 'P':
-      p2pGame(moves, rows, cols, play, p2pStatsFile);
+      p2pGame(moves, rows, cols, play, p2pSF);
       break;
     case 'C':
-      cout << "Enter GAME DIFFICULTY LEVEL => " << endl;
-      cout << "For Easy   -> Enter \"E\"" << endl;
-      cout << "For Medium -> Enter \"M\"" << endl;
-      cout << "For Hard   -> Enter \"H\"" << endl;
-      p2cGame(moves, rows, cols, play, p2cStatsFile);
+      p2cGame(moves, rows, cols, play, p2cSF);
       break;
     }
     break;
   case 'S':
     cout << "P2P STATS >>>" << endl;
-    showStats(p2pStatsFile);
+    showStats(p2pSF);
     cout << "P2C STATS >>>" << endl;
-    showStats(p2cStatsFile);
+    showStats(p2cSF);
+    cout << "\n " << endl;
+    menu(moves, rows, cols);
     break;
   case 'G':
     cout << "Creating New P2C Game =>\n " << endl;
-    p2cGame(moves, rows, cols, play, p2cStatsFile);
+    p2cGame(moves, rows, cols, play, p2cSF);
     break;
   }
+}
+
+void ticTacToe()
+{
+  int rows = 3;
+  int cols = 3;
+
+  char **moves = nullptr;
+  allocateMoves(moves, rows, cols);
+
+  char *p2pStatsFile = new char[10]{"p2p-Stats"};
+  resetStats(p2pStatsFile, 0, 0, 0);
+
+  char *p2cStatsFile = new char[10]{"p2c-Stats"};
+  resetStats(p2cStatsFile, 0, 0, 0);
+
+  menu(moves, rows, cols);
+
+  deallocateMoves(moves, rows);
+  delete[] p2pStatsFile;
+  delete[] p2cStatsFile;
 }
