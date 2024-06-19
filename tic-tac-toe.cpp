@@ -326,15 +326,6 @@ void p2pGame(char **moves, int rows, int cols, char play, const char *sF)
   {
     menu(moves, rows, cols);
   }
-  else
-  {
-    char reset = '\0';
-    cout << "Do you want to Reset Stats (y/n) => ";
-    cin >> reset;
-
-    if (reset == 'y')
-      resetStats(sF, 0, 0, 0);
-  }
 }
 
 void p2cGame(char **moves, int rows, int cols, char play, const char *sF)
@@ -393,15 +384,6 @@ void p2cGame(char **moves, int rows, int cols, char play, const char *sF)
   if (play == 'M' || play == 'm')
   {
     menu(moves, rows, cols);
-  }
-  else
-  {
-    char reset = '\0';
-    cout << "Do you want to Reset Stats (y/n) => ";
-    cin >> reset;
-
-    if (reset == 'y')
-      resetStats(sF, 0, 0, 0);
   }
 }
 
@@ -481,6 +463,9 @@ void ticTacToe()
 
   menu(moves, rows, cols);
 
+  resetStats(p2pStatsFile, 0, 0, 0);
+  resetStats(p2cStatsFile, 0, 0, 0);
+  
   deallocateMoves(moves, rows);
   delete[] p2pStatsFile;
   delete[] p2cStatsFile;
